@@ -1,0 +1,224 @@
+::selection {
+    background: rgba(249, 115, 22, 0.2);
+    color: #ea580c;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #fff7ed;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #fdba74;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #f97316;
+}
+
+/* Cursor Reset Removed */
+
+.glass-nav {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+.job-card {
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    background: #ffffff;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+    border: 1px solid rgba(229, 231, 235, 0.5);
+    /* Very light border */
+    transform-style: preserve-3d;
+    perspective: 1000px;
+}
+
+.job-card:hover {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+    transform: translateY(-2px);
+    z-index: 10;
+}
+
+.job-card:active {
+    transform: scale(0.99);
+}
+
+.text-balance {
+    text-wrap: balance;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+#toast-container {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    pointer-events: none;
+}
+
+.toast {
+    background: #171717;
+    color: white;
+    padding: 14px 28px;
+    border-radius: 99px;
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+    font-weight: 500;
+    font-size: 0.9rem;
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    pointer-events: auto;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.shimmer {
+    background: linear-gradient(90deg, #f9fafb 0%, #f3f4f6 50%, #f9fafb 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Scroll Reveal */
+.reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Animation Utilities */
+@keyframes pulse-slow {
+
+    0%,
+    100% {
+        opacity: 0.15;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.25;
+        transform: scale(1.1);
+    }
+}
+
+.animate-pulse-slow {
+    animation: pulse-slow 8s ease-in-out infinite;
+}
+
+/* Cursor States */
+body.hovering #cursor-outline {
+    transform: scale(1.5);
+    background: rgba(0, 0, 0, 0.05);
+    border-color: transparent;
+}
+
+body.hovering #cursor-dot {
+    transform: scale(0.5);
+}
+
+/* Simple Fade Loader */
+#landing-overlay.loaded {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Marquee Animation */
+@keyframes marquee {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+.animate-marquee {
+    animation: marquee 20s linear infinite;
+}
+
+.animate-marquee:hover {
+    animation-play-state: paused;
+}
+
+/* Stagger Delays */
+.delay-100 {
+    animation-delay: 100ms;
+}
+
+.delay-200 {
+    animation-delay: 200ms;
+}
+
+.delay-300 {
+    animation-delay: 300ms;
+}
+
+.delay-400 {
+    animation-delay: 400ms;
+}
+
+.delay-500 {
+    animation-delay: 500ms;
+}
+
+.delay-700 {
+    animation-delay: 700ms;
+}
+
+.delay-1000 {
+    animation-delay: 1000ms;
+}
+
+/* Enhanced Scroll Reveal */
+.reveal-blur {
+    opacity: 0;
+    filter: blur(5px);
+    transform: translateY(30px) scale(0.98);
+    transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal-blur.active {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0) scale(1);
+}
