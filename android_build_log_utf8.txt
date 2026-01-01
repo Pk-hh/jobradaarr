@@ -1,0 +1,128 @@
+﻿Downloading https://services.gradle.org/distributions/gradle-8.7-all.zip
+
+.\gradlew : 
+Exception in thread 
+"main" java.net.Conne
+ctException: 
+Connection timed 
+out: no further 
+information
+At line:1 char:1
++ .\gradlew 
+assembleDebug > 
+build.log 2>&1
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (Excepti   
+ on in th...her i    
+nformation:Strin    
+g) [], RemoteExc    
+eption
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+	at java.base/sun.nio
+.ch.Net.pollConnect(N
+ative Method)
+	at java.base/sun.nio
+.ch.Net.pollConnectNo
+w(Net.java:672)
+	at java.base/sun.nio
+.ch.NioSocketImpl.tim
+edFinishConnect(NioSo
+cketImpl.java:554)
+	at java.base/sun.nio
+.ch.NioSocketImpl.con
+nect(NioSocketImpl.ja
+va:602)
+	at java.base/java.ne
+t.Socket.connect(Sock
+et.java:633)
+	at java.base/sun.net
+.NetworkClient.doConn
+ect(NetworkClient.jav
+a:178)
+	at java.base/sun.net
+.www.http.HttpClient.
+openServer(HttpClient
+.java:534)
+	at java.base/sun.net
+.www.http.HttpClient$
+1.run(HttpClient.java
+:593)
+	at java.base/sun.net
+.www.http.HttpClient$
+1.run(HttpClient.java
+:591)
+	at java.base/java.se
+curity.AccessControll
+er.doPrivileged(Acces
+sController.java:569)
+	at java.base/sun.net
+.www.http.HttpClient.
+privilegedOpenServer(
+HttpClient.java:590)
+	at java.base/sun.net
+.www.http.HttpClient.
+openServer(HttpClient
+.java:634)
+	at java.base/sun.net
+.www.protocol.https.H
+ttpsClient.<init>(Htt
+psClient.java:266)
+	at java.base/sun.net
+.www.protocol.https.H
+ttpsClient.New(HttpsC
+lient.java:380)
+	at java.base/sun.net
+.www.protocol.https.A
+bstractDelegateHttpsU
+RLConnection.getNewHt
+tpClient(AbstractDele
+gateHttpsURLConnectio
+n.java:202)
+	at java.base/sun.net
+.www.protocol.http.Ht
+tpURLConnection.plain
+Connect0(HttpURLConne
+ction.java:1262)
+	at java.base/sun.net
+.www.protocol.http.Ht
+tpURLConnection.plain
+Connect(HttpURLConnec
+tion.java:1127)
+	at java.base/sun.net
+.www.protocol.https.A
+bstractDelegateHttpsU
+RLConnection.connect(
+AbstractDelegateHttps
+URLConnection.java:17
+9)
+	at java.base/sun.net
+.www.protocol.http.Ht
+tpURLConnection.getIn
+putStream0(HttpURLCon
+nection.java:1686)
+	at java.base/sun.net
+.www.protocol.http.Ht
+tpURLConnection.getIn
+putStream(HttpURLConn
+ection.java:1610)
+	at java.base/sun.net
+.www.protocol.https.H
+ttpsURLConnectionImpl
+.getInputStream(Https
+URLConnectionImpl.jav
+a:224)
+	at org.gradle.wrappe
+r.Install.forceFetch(
+SourceFile:2)
+	at org.gradle.wrappe
+r.Install$1.call(Sour
+ceFile:8)
+	at org.gradle.wrappe
+r.GradleWrapperMain.m
+ain(SourceFile:67)
