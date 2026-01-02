@@ -1,6 +1,6 @@
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRE3ZsrgLEanTuBQy_Gx_ni0d2VHnjW_WdErPgVarPH2iDXh8kLRFdvuup71A7IAsxPxV1Al7TBYmh8/pub?output=csv';
 let allJobs = [];
-let activeFilters = { search: '', types: new Set(), location: 'all' };
+let activeFilters = { search: '', types: new Set(), sectors: new Set(), location: 'all' };
 let mouseX = 0, mouseY = 0;
 
 const els = {
@@ -9,6 +9,7 @@ const els = {
     clearSearch: document.getElementById('clear-search'),
     countBadge: document.getElementById('count-badge'),
     typeContainer: document.getElementById('type-filters-container'),
+    sectorContainer: document.getElementById('sector-filters-container'),
     locSelect: document.getElementById('location-select'),
     modal: document.getElementById('job-modal'),
     backdrop: document.getElementById('modal-backdrop'),
@@ -265,8 +266,21 @@ async function fetchData() {
             .map(job => job.news)
             .filter(news => news && news.trim().length > 0);
 
-        if (newsItems.length > 0) {
-            updateTicker(newsItems);
+        // Urgent deadlines (next 48 hours)
+        const now = new Date();
+        const urgentJobs = allJobs.filter(j => {
+            if (!j.deadline) return false;
+            const hourDiff = (j.deadline - now) / (1000 * 60 * 60);
+            return hourDiff > 0 && hourDiff <= 48;
+        });
+
+        const urgentNews = urgentJobs.map(j => `⚠️ Last Chance: ${j.title} closes on ${formatDate(j.deadline)}!`);
+
+        // Combine: Urgent first, then CSV news
+        const finalNews = [...urgentNews, ...newsItems];
+
+        if (finalNews.length > 0) {
+            updateTicker(finalNews);
         }
 
         populateFilters(allJobs);
@@ -333,7 +347,10 @@ function parseCSV(text) {
             materials: entry.materials,
             notification: entry.notification,
             docs: entry.documents,
-            news: entry.news || entry.updates // Capture news column
+            docs: entry.documents,
+            news: entry.news || entry.updates, // Capture news column
+            fee: entry.fee || entry.fees,
+            sector: entry.sector || ''
         };
     }).filter(job => job.title);
 }
@@ -347,6 +364,7 @@ function filterJobs() {
             j.title.toLowerCase().includes(activeFilters.search.toLowerCase()) ||
             j.company.toLowerCase().includes(activeFilters.search.toLowerCase());
         const matchesType = activeFilters.types.size === 0 || activeFilters.types.has(j.type);
+        const matchesSector = activeFilters.sectors.size === 0 || activeFilters.sectors.has(j.sector);
         const matchesLoc = activeFilters.location === 'all' || j.location === activeFilters.location;
         // Fix: Ensure deadline comparison covers the entire day
         let isNotExpired = true;
@@ -355,11 +373,11 @@ function filterJobs() {
             deadlineDate.setHours(23, 59, 59, 999); // End of the deadline day
             isNotExpired = deadlineDate >= now;
         }
-        return matchesSearch && matchesType && matchesLoc && isNotExpired;
+        return matchesSearch && matchesType && matchesSector && matchesLoc && isNotExpired;
     });
 
     results.sort((a, b) => {
-        if (a.featured !== b.featured) return b.featured - a.featured;
+        // Strict "Latest on Top"
         return b.posted - a.posted;
     });
 
@@ -402,7 +420,7 @@ function renderJobs(jobs) {
             if (daysLeft <= 3 && daysLeft >= 0) {
                 deadlineBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-600 border border-red-200">Expires soon</span>`;
             } else {
-                deadlineBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-orange-50 text-orange-600 border border-orange-200">Apply by: ${job.deadline.toLocaleDateString()}</span>`;
+                deadlineBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-orange-50 text-orange-600 border border-orange-200">Apply by: ${formatDate(job.deadline)}</span>`;
             }
         }
 
@@ -417,7 +435,7 @@ function renderJobs(jobs) {
                         <h3 class="font-bold text-base text-black leading-snug group-hover:text-brand-600 transition-colors">${job.title}</h3>
                         <div class="text-xs font-semibold text-gray-500 mt-0.5 flex items-center gap-2">
                             ${job.company} 
-                            ${isNew ? '<span class="px-1.5 py-0.5 bg-brand-500 text-white text-[10px] uppercase font-bold rounded ml-2">New</span>' : ''}
+                            ${isNew ? '<span class="px-1.5 py-0.5 bg-brand-500 text-white text-[10px] uppercase font-bold rounded ml-2 animate-flash">New</span>' : ''}
                         </div>
                     </div>
                 </div>
@@ -438,7 +456,7 @@ function renderJobs(jobs) {
     }).join('');
 }
 function resetAllFilters() {
-    activeFilters = { search: '', types: new Set(), location: 'all' };
+    activeFilters = { search: '', types: new Set(), sectors: new Set(), location: 'all' };
     els.searchInput.value = '';
     els.locSelect.value = 'all';
     els.clearSearch.classList.add('hidden');
@@ -450,7 +468,7 @@ function resetAllFilters() {
 window.openModal = (id) => {
     const job = allJobs.find(j => j.id === id);
     if (!job) return;
-    const format = (t) => t ? t.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/;/g, '<br class="mb-2 block">') : '';
+    const format = (t) => t ? t.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/;/g, '<br class="mb-1 block">') : '';
 
     let bannerUrl = null;
     if (job.image) {
@@ -487,11 +505,15 @@ window.openModal = (id) => {
             </div>
              <div class="p-4 bg-gray-50 rounded-xl border border-gray-100">
                 <div class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Posted On</div>
-                <div class="font-bold text-black">${job.posted ? job.posted.toLocaleDateString() : 'Recently'}</div>
+                <div class="font-bold text-black">${job.posted ? formatDate(job.posted) : 'Recently'}</div>
+            </div>
+             <div class="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                <div class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Application Fee</div>
+                <div class="font-bold text-black">${job.fee ? format(job.fee) : 'No Fee / Not Specified'}</div>
             </div>
              <div class="p-4 bg-gray-50 rounded-xl border border-gray-100">
                 <div class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Apply By</div>
-                <div class="font-bold text-black">${job.deadline ? job.deadline.toLocaleDateString() : (job.deadlineRaw || 'N/A')}</div>
+                <div class="font-bold text-black">${job.deadline ? formatDate(job.deadline) : (job.deadlineRaw || 'N/A')}</div>
             </div>
         </div>
 
@@ -605,10 +627,18 @@ function setupEventListeners() {
             i.checked = activeFilters.types.has(i.value);
             i.onchange = (e) => { toggleType(e.target.value); };
         });
+
+        // Clone Sector Filters
+        const sClone = els.sectorContainer.cloneNode(true);
+        sClone.querySelectorAll('input').forEach(i => {
+            i.checked = activeFilters.sectors.has(i.value);
+            i.onchange = (e) => { toggleSector(e.target.value); };
+        });
+
         const lClone = els.locSelect.cloneNode(true);
         lClone.value = activeFilters.location;
         lClone.onchange = (e) => { activeFilters.location = e.target.value; els.locSelect.value = e.target.value; };
-        content.append(label('Job Type'), tClone, document.createElement('hr'), label('Location'), lClone);
+        content.append(label('Job Type'), tClone, document.createElement('hr'), label('Sector'), sClone, document.createElement('hr'), label('Location'), lClone);
         mModal.classList.remove('hidden');
     };
     function label(txt) {
@@ -678,6 +708,27 @@ function populateFilters(jobs) {
         </label>
     `).join('');
 
+
+    // Populate Sectors
+    const sectors = [...new Set(jobs.map(j => j.sector).filter(Boolean))];
+    if (els.sectorContainer) {
+        if (sectors.length === 0) {
+            els.sectorContainer.parentElement.style.display = 'none';
+        } else {
+            els.sectorContainer.parentElement.style.display = 'block';
+            els.sectorContainer.innerHTML = sectors.map(sector => `
+            <label class="flex items-center gap-3 cursor-pointer group">
+                <div class="relative flex items-center">
+                    <input type="checkbox" value="${sector}" class="peer sr-only" onchange="toggleSector('${sector}')">
+                    <div class="w-5 h-5 border border-gray-300 rounded-md peer-checked:bg-brand-500 peer-checked:border-brand-500 transition-all group-hover:border-brand-400"></div>
+                    <i class="fas fa-check text-white text-[10px] absolute left-1 top-1 opacity-0 peer-checked:opacity-100 transition-opacity"></i>
+                </div>
+                <span class="text-sm text-gray-500 font-medium group-hover:text-brand-600 transition-colors">${sector}</span>
+            </label>
+           `).join('');
+        }
+    }
+
     const locs = [...new Set(jobs.map(j => j.location).filter(Boolean))];
     locs.sort().forEach(loc => {
         const opt = document.createElement('option');
@@ -693,8 +744,25 @@ function toggleType(type) {
     filterJobs();
 }
 
+function toggleSector(sector) {
+    activeFilters.sectors.has(sector) ? activeFilters.sectors.delete(sector) : activeFilters.sectors.add(sector);
+    syncFilters();
+    filterJobs();
+}
+
 function syncFilters() {
-    document.querySelectorAll('input[value]').forEach(inp => inp.checked = activeFilters.types.has(inp.value));
+    document.querySelectorAll('input[type="checkbox"]').forEach(inp => {
+        // We need to differentiate between type and sector checkboxes if they share values, 
+        // but here we just check against both sets for simplicity or use context.
+        // Better: check which set it belongs to based on parent.
+        const val = inp.value;
+        if (inp.closest('#type-filters-container') || inp.closest('#mobile-filter-content')) {
+            // Logic simplified: just check if it's in either. 
+            // Actually, let's keep it specific if we can.
+            // For now, relies on unique values or just simple check:
+            inp.checked = activeFilters.types.has(val) || activeFilters.sectors.has(val);
+        }
+    });
 }
 
 function selectCategory(cat) {
@@ -724,4 +792,12 @@ function updateTicker(newsItems) {
 
     // Duplicate content to ensure smooth seamless scrolling if content is short
     tickerContainer.innerHTML = tickerHTML + tickerHTML + tickerHTML;
+}
+
+function formatDate(date) {
+    if (!date) return '';
+    const d = date.getDate().toString().padStart(2, '0');
+    const m = (date.getMonth() + 1).toString().padStart(2, '0');
+    const y = date.getFullYear();
+    return `${d}-${m}-${y}`;
 }
