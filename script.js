@@ -358,11 +358,15 @@ function parseCSV(text) {
 function filterJobs() {
     const now = new Date();
     now.setHours(0, 0, 0, 0);
+    const searchTerm = activeFilters.search.toLowerCase();
 
     let results = allJobs.filter(j => {
-        const matchesSearch = !activeFilters.search ||
-            j.title.toLowerCase().includes(activeFilters.search.toLowerCase()) ||
-            j.company.toLowerCase().includes(activeFilters.search.toLowerCase());
+        const matchesSearch = !searchTerm ||
+            j.title.toLowerCase().includes(searchTerm) ||
+            j.company.toLowerCase().includes(searchTerm) ||
+            j.sector.toLowerCase().includes(searchTerm) ||
+            j.tags.some(t => t.toLowerCase().includes(searchTerm));
+
         const matchesType = activeFilters.types.size === 0 || activeFilters.types.has(j.type);
         const matchesSector = activeFilters.sectors.size === 0 || activeFilters.sectors.has(j.sector);
         const matchesLoc = activeFilters.location === 'all' || j.location === activeFilters.location;
